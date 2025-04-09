@@ -52,8 +52,17 @@
         "id": "hero-mancer",
         "type": "module",
         "compatibility": {
-          "minimum": "0",
-          "verified": "0"
+          "minimum": "1.2.1",
+          "verified": "1.2.1"
+        }
+      }
+    ],
+    "optional": [
+      {
+        "id": "tidy5e-sheet",
+        "type": "module",
+        "compatibility": {
+          "verified": "9.1.0"
         }
       }
     ]

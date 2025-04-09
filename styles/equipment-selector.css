@@ -344,6 +344,27 @@ tr.wealth-roll-container[style*='display: table-row'] {
   display: table-row;
 }
 
+/* Add to your module's CSS file */
+.tidy5e-equipment-selector-btn {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  line-height: 20px;
+  text-align: center;
+  color: var(--t5e-primary-font);
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.tidy5e-equipment-selector-btn:hover {
+  color: var(--t5e-primary-accent);
+  background: #0000001a;
+}
+
 /* Responsive */
 @media (width <= 999px) {
   .application.equipment-selector {

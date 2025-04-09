@@ -456,17 +456,12 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
 /*  Module Initialization                       */
 /* -------------------------------------------- */
 
-// Initialize module
-Hooks.once('init', () => {
-  console.log('Equipment Selector | Initializing module');
-});
-
 // Register when Hero Mancer is ready
 Hooks.once('heroMancer.Ready', () => {
   console.log('Equipment Selector | Hero Mancer API detected');
 
   // Register module API
-  game.modules.get('equipment-selector').api = {
+  globalThis.heroMancerEquipmentSelector = {
     /**
      * Opens the equipment selector for an actor
      * @param {Actor} actor - The actor to select equipment for
@@ -482,37 +477,105 @@ Hooks.once('heroMancer.Ready', () => {
       return selector;
     }
   };
+
+  // Add support for standard 5e sheets
+  setupStandardSheetSupport();
+
+  // Add Tidy5e support if available
+  if (game.modules.get('tidy5e-sheet')?.active) {
+    console.log('Equipment Selector | Tidy5e detected, adding support');
+    setupTidy5eSupport();
+  }
 });
 
-// Add equipment selector button to character sheets
-Hooks.on('renderActorSheet5e', (app, html, data) => {
-  if (app.actor.type !== 'character') return;
+/**
+ * Setup support for standard 5e character sheets
+ */
+function setupStandardSheetSupport() {
+  // Add equipment selector button to character sheets
+  Hooks.on('renderActorSheet5e', (app, html, data) => {
+    if (app.actor.type !== 'character') return;
 
-  const currencySection = html.find('section.currency');
-  if (currencySection.length === 0) return;
+    const currencySection = html.find('section.currency');
+    if (currencySection.length === 0) return;
 
-  // Create and add equipment selector button
-  const equipButton = $(`
-    <button type="button" class="item-action unbutton equipment-selector-btn"
-            data-action="equipment-selector"
-            data-tooltip="Select Equipment"
-            aria-label="Select Equipment">
-      <i class="fas fa-shopping-bag"></i>
-    </button>
-  `);
+    // Create and add equipment selector button
+    const equipButton = $(`
+      <button type="button" class="item-action unbutton equipment-selector-btn"
+              data-action="equipment-selector"
+              data-tooltip="Select Equipment"
+              aria-label="Select Equipment">
+        <i class="fas fa-shopping-bag"></i>
+      </button>
+    `);
 
-  currencySection.find('button').first().after(equipButton);
+    currencySection.find('button').first().after(equipButton);
 
-  // Add click handler
-  equipButton.click((ev) => {
-    ev.preventDefault();
-    ev.stopPropagation();
+    // Add click handler
+    equipButton.click((ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
 
-    if (heroMancer) {
-      const selector = new EquipmentSelector(app.actor);
-      selector.render(true);
+      if (heroMancer) {
+        const selector = new EquipmentSelector(app.actor);
+        selector.render(true);
+      } else {
+        ui.notifications.error('Hero Mancer not available');
+      }
+    });
+  });
+}
+
+/**
+ * Setup support for Tidy5e character sheets
+ */
+function setupTidy5eSupport() {
+  Hooks.on('tidy5e-sheet.renderActorSheet', (app, html, data) => {
+    // Only for character-type actors
+    if (app.actor.type !== 'character') return;
+
+    // Find the utility toolbar in the inventory tab
+    const inventoryTab = html.querySelector('.tidy-tab.inventory');
+    if (!inventoryTab) return;
+
+    const utilityToolbar = inventoryTab.querySelector('.utility-toolbar');
+    if (!utilityToolbar) return;
+
+    // Check if our button already exists to prevent duplicates
+    if (utilityToolbar.querySelector('button[data-equipment-selector="true"]')) {
+      return; // Button already exists, don't add another one
+    }
+
+    // Create equipment selector button
+    const equipButton = document.createElement('button');
+    equipButton.type = 'button';
+    equipButton.title = 'Select Equipment';
+    equipButton.className = 'inline-icon-button';
+    equipButton.setAttribute('tabindex', '-1');
+    equipButton.setAttribute('data-tidy-sheet-part', 'utility-toolbar-command');
+    equipButton.setAttribute('data-equipment-selector', 'true');
+    equipButton.innerHTML = '<i class="fas fa-shopping-bag"></i>';
+
+    // Add click handler
+    equipButton.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+
+      if (heroMancer) {
+        const selector = new EquipmentSelector(app.actor);
+        selector.render(true);
+      } else {
+        ui.notifications.error('Hero Mancer not available');
+      }
+    });
+
+    // Insert before the configuration button (cog icon)
+    const configButton = utilityToolbar.querySelector('button[title="Configure Sections"]');
+    if (configButton) {
+      configButton.before(equipButton);
     } else {
-      ui.notifications.error('Hero Mancer not available');
+      // Fallback: add to the end of the toolbar
+      utilityToolbar.appendChild(equipButton);
     }
   });
-});
+}
