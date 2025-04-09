@@ -253,12 +253,20 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
     this.element.querySelectorAll('input[id^="use-starting-wealth-"]').forEach((checkbox) => {
       checkbox.addEventListener('change', (event) => {
         const checked = event.currentTarget.checked;
-        const equipmentItems = this.element.querySelectorAll('.equipment-item');
+        const sectionType = checkbox.id.includes('-class') ? 'class' : 'background';
+
+        // Only select equipment items within the specific section
+        const equipmentSection = this.element.querySelector(`.${sectionType}-equipment-section`);
+        if (!equipmentSection) return;
+
+        const equipmentItems = equipmentSection.querySelectorAll('.equipment-item');
 
         equipmentItems.forEach((item) => {
           item.classList.toggle('disabled', checked);
           item.querySelectorAll('select, input[type="checkbox"]').forEach((input) => {
-            input.disabled = checked;
+            if (!input.classList.contains('equipment-favorite-checkbox')) {
+              input.disabled = checked;
+            }
           });
         });
       });
@@ -391,7 +399,6 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
    */
   static async formHandler(_event, form, formData) {
     try {
-      // Get the actor from the application instance
       const actor = this.actor;
 
       if (!actor) {
@@ -399,30 +406,39 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
         return false;
       }
 
-      // Check if using wealth option
-      const useWealth = formData.object['use-starting-wealth-class'] || formData.object['use-starting-wealth-background'];
+      // Check individual wealth options
+      const useClassWealth = formData.object['use-starting-wealth-class'];
+      const useBackgroundWealth = formData.object['use-starting-wealth-background'];
 
-      if (useWealth) {
-        // Process starting wealth
-        const currency = await heroMancer.convertWealthToCurrency(formData.object);
-        if (currency) {
-          await actor.update({ 'system.currency': currency });
+      // Process wealth values for both options if selected
+      let updatedCurrency = null;
+      if (useClassWealth || useBackgroundWealth) {
+        updatedCurrency = await heroMancer.convertWealthToCurrency(formData.object);
+
+        if (updatedCurrency) {
+          await actor.update({ 'system.currency': updatedCurrency });
           ui.notifications.info(`Added currency to ${actor.name}`);
         }
-      } else {
-        // Collect equipment selections
-        const equipment = await heroMancer.collectEquipmentSelections({ target: form }, { includeClass: true, includeBackground: true });
+      }
 
-        if (equipment?.length > 0) {
-          // Create the items on the actor
-          const createdItems = await actor.createEmbeddedDocuments('Item', equipment, { keepId: true });
-          ui.notifications.info(`Added ${equipment.length} items to ${actor.name}`);
+      // Collect equipment selections (excluding sections using wealth)
+      const equipmentOptions = {
+        includeClass: !useClassWealth,
+        includeBackground: !useBackgroundWealth
+      };
 
-          // Process favorites
-          await EquipmentSelector.#processEquipmentFavorites(actor, form, createdItems);
-        } else {
-          ui.notifications.warn('No equipment selected');
-        }
+      const equipment = await heroMancer.collectEquipmentSelections({ target: form }, equipmentOptions);
+
+      if (equipment?.length > 0) {
+        // Create the items on the actor
+        const createdItems = await actor.createEmbeddedDocuments('Item', equipment, { keepId: true });
+        ui.notifications.info(`Added ${equipment.length} items to ${actor.name}`);
+
+        // Process favorites
+        await EquipmentSelector.#processEquipmentFavorites(actor, form, createdItems);
+      } else if (!useClassWealth && !useBackgroundWealth) {
+        // Only show warning if neither wealth option was selected
+        ui.notifications.warn('No equipment selected');
       }
 
       // Call hook for equipment added
