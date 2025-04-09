@@ -58,7 +58,6 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
     },
     window: {
       icon: 'fas fa-shopping-bag',
-      title: 'Equipment Selector',
       resizable: true,
       minimizable: true
     }
@@ -79,7 +78,7 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
    * @returns {string} The window title
    */
   get title() {
-    return `Equipment Selector | ${this.actor?.name || 'Character'}`;
+    return game.i18n.format('equipment-selector.window.title', { name: this.actor?.name || game.i18n.localize('equipment-selector.general.character') });
   }
 
   /**
@@ -106,8 +105,8 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
     switch (partId) {
       case 'header':
         context.actorImg = this.actor.img;
-        context.className = classItem?.name || 'No Class';
-        context.backgroundName = backgroundItem?.name || 'No Background';
+        context.className = classItem?.name || game.i18n.localize('equipment-selector.header.no-class');
+        context.backgroundName = backgroundItem?.name || game.i18n.localize('equipment-selector.header.no-background');
         break;
 
       case 'footer':
@@ -128,7 +127,7 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
   async _onFirstRender(_context, _options) {
     try {
       if (!heroMancer) {
-        throw new Error('Hero Mancer API not found. Is the module active?');
+        throw new Error(game.i18n.localize('equipment-selector.errors.no-hero-mancer'));
       }
 
       // Initialize equipment parser
@@ -137,7 +136,7 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
       // Get and clear equipment container
       const equipmentContainer = this.element.querySelector('#equipment-container');
       if (!equipmentContainer) {
-        throw new Error('Equipment container element not found');
+        throw new Error(game.i18n.localize('equipment-selector.errors.no-container'));
       }
       equipmentContainer.innerHTML = '';
 
@@ -153,7 +152,7 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
         if (globalEquipmentChoices) {
           equipmentContainer.appendChild(globalEquipmentChoices.cloneNode(true));
         } else {
-          throw new Error('Could not find rendered equipment content');
+          throw new Error(game.i18n.localize('equipment-selector.errors.no-content'));
         }
       } else {
         equipmentContainer.appendChild(equipmentChoices);
@@ -177,14 +176,14 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
       this.#positionNextToSheet();
     } catch (error) {
       console.error('Equipment Selector | Error during initialization:', error);
-      ui.notifications.error(`Equipment Selector Error: ${error.message}`);
+      ui.notifications.error(game.i18n.format('equipment-selector.notifications.init-error', { message: error.message }), { localize: true });
 
       const equipmentContainer = this.element.querySelector('#equipment-container');
       if (equipmentContainer) {
         equipmentContainer.innerHTML = `
           <div class="error-message">
             <i class="fas fa-exclamation-triangle"></i>
-            Error loading equipment options: ${error.message}
+            ${game.i18n.format('equipment-selector.error-display', { message: error.message })}
           </div>
         `;
       }
@@ -294,7 +293,7 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
       }
     } catch (error) {
       console.error('Equipment Selector | Error processing favorites:', error);
-      ui.notifications.warn(`Error processing favorites: ${error.message}`);
+      ui.notifications.warn(game.i18n.format('equipment-selector.notifications.favorites-error', { message: error.message }), { localize: true });
     }
   }
 
@@ -402,7 +401,7 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
       const actor = this.actor;
 
       if (!actor) {
-        ui.notifications.error('Actor not found');
+        ui.notifications.error('equipment-selector.notifications.no-actor', { localize: true });
         return false;
       }
 
@@ -417,7 +416,7 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
 
         if (updatedCurrency) {
           await actor.update({ 'system.currency': updatedCurrency });
-          ui.notifications.info(`Added currency to ${actor.name}`);
+          ui.notifications.info(game.i18n.format('equipment-selector.notifications.currency', { name: actor.name }), { localize: true });
         }
       }
 
@@ -432,13 +431,13 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
       if (equipment?.length > 0) {
         // Create the items on the actor
         const createdItems = await actor.createEmbeddedDocuments('Item', equipment, { keepId: true });
-        ui.notifications.info(`Added ${equipment.length} items to ${actor.name}`);
+        ui.notifications.info(game.i18n.format('equipment-selector.notifications.added', { count: equipment.length, name: actor.name }), { localize: true });
 
         // Process favorites
         await EquipmentSelector.#processEquipmentFavorites(actor, form, createdItems);
       } else if (!useClassWealth && !useBackgroundWealth) {
         // Only show warning if neither wealth option was selected
-        ui.notifications.warn('No equipment selected');
+        ui.notifications.warn('equipment-selector.notifications.none', { localize: true });
       }
 
       // Call hook for equipment added
@@ -446,7 +445,7 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
       return true;
     } catch (error) {
       console.error('Equipment Selector | Form submission error:', error);
-      ui.notifications.error(`Error adding equipment: ${error.message}`);
+      ui.notifications.error(game.i18n.format('equipment-selector.notifications.error', { message: error.message }), { localize: true });
       return false;
     }
   }
@@ -469,7 +468,7 @@ Hooks.once('heroMancer.Ready', () => {
      */
     open: (actor) => {
       if (!actor) {
-        ui.notifications.error('No actor provided');
+        ui.notifications.error('equipment-selector.notifications.no-actor', { localize: true });
         return null;
       }
       const selector = new EquipmentSelector(actor);
@@ -503,8 +502,8 @@ function setupStandardSheetSupport() {
     const equipButton = $(`
       <button type="button" class="item-action unbutton equipment-selector-btn"
               data-action="equipment-selector"
-              data-tooltip="Select Equipment"
-              aria-label="Select Equipment">
+              data-tooltip="${game.i18n.localize('equipment-selector.button.title')}"
+              aria-label="${game.i18n.localize('equipment-selector.button.label')}">
         <i class="fas fa-shopping-bag"></i>
       </button>
     `);
@@ -520,7 +519,7 @@ function setupStandardSheetSupport() {
         const selector = new EquipmentSelector(app.actor);
         selector.render(true);
       } else {
-        ui.notifications.error('Hero Mancer not available');
+        ui.notifications.error('equipment-selector.notifications.no-hero-mancer', { localize: true });
       }
     });
   });
@@ -549,7 +548,7 @@ function setupTidy5eSupport() {
     // Create equipment selector button
     const equipButton = document.createElement('button');
     equipButton.type = 'button';
-    equipButton.title = 'Select Equipment';
+    equipButton.title = game.i18n.localize('equipment-selector.button.title');
     equipButton.className = 'inline-icon-button';
     equipButton.setAttribute('tabindex', '-1');
     equipButton.setAttribute('data-tidy-sheet-part', 'utility-toolbar-command');
@@ -565,7 +564,7 @@ function setupTidy5eSupport() {
         const selector = new EquipmentSelector(app.actor);
         selector.render(true);
       } else {
-        ui.notifications.error('Hero Mancer not available');
+        ui.notifications.error('equipment-selector.notifications.no-hero-mancer', { localize: true });
       }
     });
 
