@@ -1,0 +1,22 @@
+{
+  "equipment-selector": {
+    "button": {
+      "label": "Select Equipment",
+      "title": "Open Equipment Selector"
+    },
+    "footer": {
+      "add": "Add Equipment",
+      "cancel": "Cancel"
+    },
+    "header": {
+      "title": "Select Equipment"
+    },
+    "notifications": {
+      "added": "Added {count} items to {name}",
+      "currency": "Added currency to {name}",
+      "error": "Error: {message}",
+      "none": "No equipment selected"
+    },
+    "title": "Equipment Selector"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "id": "equipment-selector",
+  "title": "Equipment Selector",
+  "description": "A lightweight equipment selection interface using Hero Mancer's API.",
+  "version": "",
+  "bugs": "https://github.com/Sayshal/equipment-selector/issues",
+  "changelog": "https://github.com/Sayshal/equipment-selector/releases",
+  "license": "https://github.com/Sayshal/equipment-selector?tab=MIT-1-ov-file",
+  "readme": "https://github.com/Sayshal/equipment-selector?tab=readme-ov-file",
+  "authors": [
+    {
+      "name": "Tyler",
+      "discord": "Tyler",
+      "url": "https://github.com/Sayshal"
+    }
+  ],
+  "compatibility": {
+    "maximum": "13.339",
+    "minimum": "12.331",
+    "verified": "12.331"
+  },
+  "download": "",
+  "esmodules": ["scripts/equipment-selector.js", "scripts/equipment-selector-app.js"],
+  "flags": {
+    "hotReload": {
+      "extensions": ["css", "html", "hbs", "json"],
+      "paths": ["styles", "templates"]
+    }
+  },
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "manifest": "https://github.com/Sayshal/equipment-selector/releases/latest/download/module.json",
+  "relationships": {
+    "systems": [
+      {
+        "compatibility": {
+          "maximum": "4.3.x",
+          "minimum": "3.3.1",
+          "verified": "3.3.1"
+        },
+        "id": "dnd5e",
+        "type": "system"
+      }
+    ],
+    "requires": [
+      {
+        "id": "hero-mancer",
+        "type": "module",
+        "compatibility": {
+          "minimum": "0",
+          "verified": "0"
+        }
+      }
+    ]
+  },
+  "styles": ["styles/equipment-selector.css"],
+  "url": "https://github.com/Sayshal/equipment-selector"
+}

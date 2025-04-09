@@ -1,0 +1,120 @@
+/* Main application styling */
+.equipment-selector {
+  min-width: 540px;
+  min-height: 400px;
+}
+
+/* Header section */
+.equipment-selector-header {
+  padding: 0.625rem;
+  border-bottom: 1px solid var(--color-border-light-primary);
+}
+
+.equipment-selector-header .character-info {
+  display: flex;
+  align-items: center;
+}
+
+.equipment-selector-header .character-image {
+  width: 21rem;
+  height: 21rem;
+  object-fit: cover;
+  border: 1px solid var(--color-border-highlight);
+  border-radius: 4px;
+  margin-right: 0.625rem;
+}
+
+.equipment-selector-header .character-details h2 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+.equipment-selector-header .character-description {
+  color: var(--color-text-dark-secondary);
+  font-size: 0.9em;
+}
+
+/* Content section */
+.equipment-selector-content {
+  padding: 0.625rem;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.equipment-container .loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  color: var(--color-text-dark-secondary);
+}
+
+/* Footer section */
+.equipment-selector-footer {
+  padding: 0.625rem;
+  border-top: 1px solid var(--color-border-light-primary);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.equipment-actions button {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.375rem 0.75rem;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.equipment-actions .confirm-button {
+  background-color: var(--color-button-confirm);
+  color: #fff;
+}
+
+.equipment-actions .cancel-button {
+  background-color: var(--color-button-cancel);
+  color: #fff;
+}
+
+/* Shared styles to work with Hero Mancer equipment UI */
+.equipment-item {
+  margin-bottom: 12px;
+  padding: 0.5rem;
+  border-radius: 5px;
+  background: #0000000d;
+}
+
+.equipment-item.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.wealth-option-container {
+  margin-bottom: 15px;
+  padding: 0.625rem;
+  background-color: #0000000d;
+  border-radius: 5px;
+}
+
+.wealth-roll-container {
+  display: flex;
+  margin-top: 5px;
+}
+
+.wealth-roll-container input {
+  flex-grow: 1;
+  margin-right: 5px;
+}
+
+/* Sheet button styling */
+.item-control.equipment-selector-btn {
+  margin-left: 4px;
+  color: var(--color-text-hyperlink);
+}
+
+.item-control.equipment-selector-btn:hover {
+  color: var(--color-text-hyperlink-hover);
+  text-shadow: 0 0 0.5rem var(--color-shadow-primary);
+}
