@@ -20,7 +20,7 @@
     "verified": "12.331"
   },
   "download": "",
-  "esmodules": ["scripts/equipment-selector.js", "scripts/equipment-selector-app.js"],
+  "esmodules": ["scripts/equipment-selector.js"],
   "flags": {
     "hotReload": {
       "extensions": ["css", "html", "hbs", "json"],
