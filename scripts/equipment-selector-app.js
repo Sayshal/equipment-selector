@@ -170,6 +170,23 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
         equipmentContainer.appendChild(equipmentChoices);
       }
 
+      // After adding equipmentChoices to equipmentContainer
+      // Verify section structure
+      const sections = equipmentContainer.querySelectorAll('.equipment-choices > div');
+      console.log('Equipment sections after generation:', sections);
+
+      // Ensure sections have proper class names
+      sections.forEach((section) => {
+        if (section.querySelector('h3')?.textContent.includes('Class')) {
+          section.classList.add('class-equipment-section');
+        } else if (section.querySelector('h3')?.textContent.includes('Background')) {
+          section.classList.add('background-equipment-section');
+        }
+      });
+
+      // Double check sections now have proper class names
+      console.log('Equipment sections after fixing classes:', equipmentContainer.querySelectorAll('.class-equipment-section, .background-equipment-section'));
+
       // Remove the temporary container
       document.body.removeChild(tempContainer);
 
@@ -269,7 +286,6 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
    * @static
    */
   static async formHandler(event, form, formData) {
-    console.error('FORMHANDLER', { event, form, formData });
     try {
       const actor = this.actor;
 
@@ -284,11 +300,62 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
           ui.notifications.info(`Added currency to ${actor.name}`);
         }
       } else {
-        // Collect equipment selections
-        const equipment = await heroMancer.collectEquipmentSelections(event);
+        // The issue is likely here - properly prepare for equipment collection
+        const equipmentContainer = form.querySelector('#equipment-container');
+
+        // Debug what sections are available
+        console.log('Equipment sections:', equipmentContainer?.querySelectorAll('.equipment-choices > div'));
+
+        // Look specifically for container items in the form
+        const containerCheckboxes = form.querySelectorAll('input[type="checkbox"][id*="Pack"]');
+        console.log('Container checkboxes detected:', containerCheckboxes.length);
+        containerCheckboxes.forEach((cb) => {
+          console.log('Container checkbox:', {
+            id: cb.id,
+            checked: cb.checked,
+            disabled: cb.disabled
+          });
+        });
+
+        // Explicitly specify options and use the form element, not the event
+        const equipment = await heroMancer.collectEquipmentSelections(
+          {
+            target: form
+          },
+          {
+            includeClass: true,
+            includeBackground: true
+          }
+        );
+
+        // Log equipment analysis
+        console.log(`Collected ${equipment?.length || 0} total equipment items`);
+
+        // Analyze container items
+        const containerItems = equipment?.filter((item) => item.type === 'container') || [];
+        console.log(`Found ${containerItems.length} container items in collection`);
+
+        // Examine each container in detail
+        containerItems.forEach((container, index) => {
+          console.log(`Container #${index + 1}: ${container.name}`, {
+            id: container._id,
+            flags: container.flags,
+            system: container.system,
+            contents: container.contents || 'No contents property',
+            children: container.children || 'No children property'
+          });
+        });
 
         if (equipment && equipment.length > 0) {
-          await actor.createEmbeddedDocuments('Item', equipment);
+          // Log the structure before creating
+          console.log(
+            'Creating equipment items with structure:',
+            equipment.map((i) => ({ name: i.name, type: i.type, id: i._id }))
+          );
+
+          const created = await actor.createEmbeddedDocuments('Item', equipment);
+          console.log(`Created ${created.length} items including ${created.filter((i) => i.type === 'container').length} containers`);
+
           ui.notifications.info(`Added ${equipment.length} items to ${actor.name}`);
         } else {
           ui.notifications.warn('No equipment selected');
