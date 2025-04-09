@@ -266,6 +266,122 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
   }
 
   /**
+   * Processes selected favorites from the form
+   * @param {Actor} actor - The actor to update
+   * @param {HTMLElement} form - The form element
+   * @param {Array<Item>} createdItems - Items created on the actor
+   * @returns {Promise<void>}
+   * @private
+   */
+  static async #processEquipmentFavorites(actor, form, createdItems) {
+    const favoriteCheckboxes = form.querySelectorAll('.equipment-favorite-checkbox:checked');
+    if (!favoriteCheckboxes.length) return;
+
+    try {
+      const currentActorFavorites = actor.system.favorites || [];
+      const newFavorites = await this.#collectNewFavorites(favoriteCheckboxes, createdItems);
+
+      if (newFavorites.length > 0) {
+        await this.#updateActorFavorites(actor, currentActorFavorites, newFavorites);
+      }
+    } catch (error) {
+      console.error('Equipment Selector | Error processing favorites:', error);
+      ui.notifications.warn(`Error processing favorites: ${error.message}`);
+    }
+  }
+
+  /**
+   * Collects new favorites from selected checkboxes
+   * @param {NodeList} favoriteCheckboxes - Selected favorite checkboxes
+   * @param {Array<Item>} createdItems - Items created on the actor
+   * @returns {Promise<Array<object>>} Favorite data objects
+   * @private
+   */
+  static async #collectNewFavorites(favoriteCheckboxes, createdItems) {
+    const newFavorites = [];
+    const processedUuids = new Set(); // To avoid duplicates
+
+    for (const checkbox of favoriteCheckboxes) {
+      const itemUuids = this.#extractItemUuids(checkbox);
+      if (!itemUuids.length) continue;
+
+      for (const uuid of itemUuids) {
+        if (processedUuids.has(uuid)) continue;
+        processedUuids.add(uuid);
+
+        const favoriteItems = await this.#findMatchingCreatedItems(uuid, createdItems);
+        for (const item of favoriteItems) {
+          newFavorites.push({
+            type: 'item',
+            id: `.Item.${item.id}`,
+            sort: 100000 + newFavorites.length
+          });
+        }
+      }
+    }
+
+    return newFavorites;
+  }
+
+  /**
+   * Extracts item UUIDs from a favorite checkbox
+   * @param {HTMLElement} checkbox - Favorite checkbox element
+   * @returns {Array<string>} Extracted UUIDs
+   * @private
+   */
+  static #extractItemUuids(checkbox) {
+    if (checkbox.dataset.itemUuids) {
+      return checkbox.dataset.itemUuids.split(',');
+    } else if (checkbox.id && checkbox.id.includes(',')) {
+      return checkbox.id.split(',');
+    } else if (checkbox.dataset.itemId) {
+      return [checkbox.dataset.itemId];
+    }
+    return [];
+  }
+
+  /**
+   * Finds matching created items from source UUID
+   * @param {string} uuid - Source item UUID
+   * @param {Array<Item>} createdItems - Items created on the actor
+   * @returns {Promise<Array<Item>>} Matching items
+   * @private
+   */
+  static async #findMatchingCreatedItems(uuid, createdItems) {
+    if (!uuid.startsWith('Compendium.')) return [];
+
+    try {
+      const sourceItem = await fromUuid(uuid);
+      if (!sourceItem) return [];
+
+      return createdItems.filter((item) => item.name === sourceItem.name || (item.flags?.core?.sourceId && item.flags.core.sourceId.includes(sourceItem.id)));
+    } catch (error) {
+      console.error(`Equipment Selector | Error processing UUID ${uuid}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Updates actor favorites with new favorites
+   * @param {Actor} actor - The actor to update
+   * @param {Array<object>} currentFavorites - Current actor favorites
+   * @param {Array<object>} newFavorites - New favorites to add
+   * @returns {Promise<void>}
+   * @private
+   */
+  static async #updateActorFavorites(actor, currentFavorites, newFavorites) {
+    // Add new favorites without duplicates
+    const combinedFavorites = [...currentFavorites];
+    for (const newFav of newFavorites) {
+      if (!combinedFavorites.some((fav) => fav.id === newFav.id)) {
+        combinedFavorites.push(newFav);
+      }
+    }
+
+    await actor.update({ 'system.favorites': combinedFavorites });
+  }
+
+  /**
    * Form submission handler
    * @param {Event} _event - The form event
    * @param {HTMLElement} form - The form element
@@ -275,7 +391,13 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
    */
   static async formHandler(_event, form, formData) {
     try {
+      // Get the actor from the application instance
       const actor = this.actor;
+
+      if (!actor) {
+        ui.notifications.error('Actor not found');
+        return false;
+      }
 
       // Check if using wealth option
       const useWealth = formData.object['use-starting-wealth-class'] || formData.object['use-starting-wealth-background'];
@@ -292,8 +414,12 @@ export class EquipmentSelector extends HandlebarsApplicationMixin(ApplicationV2)
         const equipment = await heroMancer.collectEquipmentSelections({ target: form }, { includeClass: true, includeBackground: true });
 
         if (equipment?.length > 0) {
-          await actor.createEmbeddedDocuments('Item', equipment, { keepId: true });
+          // Create the items on the actor
+          const createdItems = await actor.createEmbeddedDocuments('Item', equipment, { keepId: true });
           ui.notifications.info(`Added ${equipment.length} items to ${actor.name}`);
+
+          // Process favorites
+          await EquipmentSelector.#processEquipmentFavorites(actor, form, createdItems);
         } else {
           ui.notifications.warn('No equipment selected');
         }
