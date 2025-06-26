@@ -52,7 +52,6 @@
         "id": "hero-mancer",
         "type": "module",
         "compatibility": {
-          "minimum": "1.2.1",
           "verified": "1.2.1"
         }
       }
