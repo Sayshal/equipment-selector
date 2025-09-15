@@ -1,8 +1,8 @@
 # Equipment Selector
 
 ![GitHub release](https://img.shields.io/github/v/release/Sayshal/equipment-selector?style=for-the-badge)
-![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/Sayshal/equipment-selector/module.zip?style=for-the-badge&logo=foundryvirtualtabletop&logoColor=white&logoSize=auto&label=Downloads%20(Total)&color=ff144f)
-![GitHub Downloads (specific asset, latest release)](https://img.shields.io/github/downloads/Sayshal/equipment-selector/latest/module.zip?sort=date&style=for-the-badge&logo=foundryvirtualtabletop&logoColor=white&logoSize=auto&label=Downloads%20(Latest)&color=ff144f)
+![GitHub Downloads (specific asset, all releases)](<https://img.shields.io/github/downloads/Sayshal/equipment-selector/module.zip?style=for-the-badge&logo=foundryvirtualtabletop&logoColor=white&logoSize=auto&label=Downloads%20(Total)&color=ff144f>)
+![GitHub Downloads (specific asset, latest release)](<https://img.shields.io/github/downloads/Sayshal/equipment-selector/latest/module.zip?sort=date&style=for-the-badge&logo=foundryvirtualtabletop&logoColor=white&logoSize=auto&label=Downloads%20(Latest)&color=ff144f>)
 
 ![Foundry Version](https://img.shields.io/endpoint?url=https%3A%2F%2Ffoundryshields.com%2Fversion%3Fstyle%3Dfor-the-badge%26url%3Dhttps%3A%2F%2Fgithub.com%2FSayshal%2Fequipment-selector%2Freleases%2Flatest%2Fdownload%2Fmodule.json)
 ![D&D5E Version](https://img.shields.io/endpoint?url=https%3A%2F%2Ffoundryshields.com%2Fsystem%3FnameType%3Dfoundry%26showVersion%3D1%26style%3Dfor-the-badge%26url%3Dhttps%3A%2F%2Fgithub.com%2FSayshal%2Fequipment-selector%2Freleases%2Flatest%2Fdownload%2Fmodule.json)
@@ -38,7 +38,7 @@ Get Equipment Selector through Foundry's **Module Manager** or **The Forge's Baz
 1. Open **Foundry's Configuration and Setup** screen
 2. Click **Install Module** in the Add-on Modules section
 3. Paste this URL in the **Manifest URL** field:
- [https://github.com/Sayshal/equipment-selector/releases/latest/download/module.json](https://github.com/Sayshal/equipment-selector/releases/latest/download/module.json)
+   [https://github.com/Sayshal/equipment-selector/releases/latest/download/module.json](https://github.com/Sayshal/equipment-selector/releases/latest/download/module.json)
 4. Click **Install**
 5. Enable Equipment Selector in the **Manage Modules** section
 
